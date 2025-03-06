@@ -1,0 +1,929 @@
+{
+    "system_config": {
+        "description": "Configure the system settings",
+        "set_hostname": {
+            "name": "Set Hostname",
+            "command": [
+                "log_message \"Setting hostname...\"",
+                "hostnamectl set-hostname {hostname}"
+            ],
+            "description": "Set the system hostname to uniquely identify the machine on the network"
+        },
+        "configure_apt": {
+            "name": "Configure APT",
+            "command": [
+                "log_message \"Configuring APT Package Manager...\"",
+                "backup_file \"/etc/apt/apt.conf.d/00aptitude\"",
+                "echo 'Acquire::http::Pipeline-Depth \"10\";' | tee -a /etc/apt/apt.conf.d/00aptitude > /dev/null",
+                "echo 'Acquire::http::MaxConnections \"10\";' | tee -a /etc/apt/apt.conf.d/00aptitude > /dev/null",
+                "apt-get install -y apt-transport-https ca-certificates software-properties-common"
+            ],
+            "description": "Optimize APT package manager for faster downloads and efficient updates"
+        },
+        "enable_apt_autoupdate": {
+            "name": "Enable APT Autoupdate",
+            "command": [
+                "log_message \"Enabling APT autoupdate...\"",
+                "apt-get install -y unattended-upgrades",
+                "dpkg-reconfigure -plow unattended-upgrades",
+                "systemctl enable --now unattended-upgrades"
+            ],
+            "description": "Enable and configure automatic system updates to enhance security and stability"
+        },
+        "remove_debian_flatpak_repos": {
+            "name": "Add Flathub Repo",
+            "command": [
+                "log_message \"Adding Flathub Repo...\"",
+                "apt-get install -y flatpak",
+                "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo",
+                "flatpak repair",
+                "flatpak update"
+            ],
+            "description": "Add Flathub Repo to improve package management and apps stability"
+        },
+        "install_ssh": {
+            "name": "Install and Enable SSH",
+            "command": [
+                "log_message \"Installing and enabling SSH...\"",
+                "apt-get install -y openssh-server",
+                "systemctl enable --now ssh"
+            ],
+            "description": "Install and enable SSH server for secure remote access and file transfers"
+        },
+        "firmware_updates": {
+            "name": "Update Firmware",
+            "command": [
+                "log_message \"Checking for firmware updates...\"",
+                "apt-get install -y fwupd",
+                "fwupdmgr refresh --force",
+                "fwupdmgr get-updates",
+                "fwupdmgr update -y"
+            ],
+            "description": "Check and apply firmware updates to improve hardware compatibility and performance"
+        },
+        "enable_multimedia_repos": {
+            "name": "Multimedia Repositories",
+            "command": [
+                "log_message \"Enabling multimedia repositories...\"",
+                "apt-get install -y software-properties-common",
+                "add-apt-repository -y non-free",
+                "add-apt-repository -y contrib",
+                "apt-get update"
+            ],
+            "description": "Enable non-free and contrib repositories to access additional software packages and codecs"
+        },
+        "install_multimedia_codecs": {
+            "name": "Multimedia Codecs",
+            "command": [
+                "log_message \"Installing multimedia codecs...\"",
+                "apt-get install -y ffmpeg",
+                "apt-get install -y ubuntu-restricted-extras"
+            ],
+            "description": "Install multimedia codecs to enhance multimedia capabilities",
+            "dependencies": ["enable_multimedia_repos"]
+        },
+        "install_intel_codecs": {
+            "name": "Intel Codecs",
+            "command": [
+                "log_message \"Installing Intel Hardware Accelerated Codecs...\"",
+                "apt-get install -y intel-media-va-driver-non-free"
+            ],
+            "description": "Install Hardware Accelerated Codecs for Intel integrated GPUs. This improves video playback and encoding performance on systems with Intel graphics.",
+            "dependencies": ["enable_multimedia_repos"]
+        },
+        "install_amd_codecs": {
+            "name": "AMD Codecs",
+            "command": [
+                "log_message \"Installing AMD Hardware Accelerated Codecs...\"",
+                "apt-get install -y mesa-va-drivers",
+                "apt-get install -y mesa-vdpau-drivers"
+            ],
+            "description": "Install Hardware Accelerated Codecs for AMD GPUs. This improves video playback and encoding performance on systems with AMD graphics.",
+            "dependencies": ["enable_multimedia_repos"]
+        },
+        "install_virtualization_tools": {
+            "name": "Virtualization Tools",
+            "command": [
+                "log_message \"Installing virtualization tools...\"",
+                "apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils"
+            ],
+            "description": "Install virtualization tools to enable virtual machines and containerization"
+        },
+        "configure_power_settings": {
+            "name": "Power Settings",
+            "command": [
+                "log_message \"Configuring power settings...\"",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.session idle-delay 0",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 'nothing'",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 0",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-timeout 0",
+                "sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'suspend'"
+            ],
+            "description": "Configure power settings to prevent system sleep and hibernation"
+        }
+    },
+    "essential_apps": {
+        "description": "Install a set of essential command-line and graphical applications for system management and productivity",
+        "apps": [
+            {"name": "mc", "description": "Midnight Commander: Versatile text-based file manager with dual pane interface"},
+            {"name": "btop", "description": "Resource monitor that shows usage and stats for processor, memory, disks, network and processes"},
+            {"name": "htop", "description": "Interactive process viewer and system monitor with a customizable interface"},
+            {"name": "rsync", "description": "Fast and versatile file copying tool for local and remote file synchronization"},
+            {"name": "inxi", "description": "Command-line system information tool for hardware, CPU, drivers, and more"},
+            {"name": "ncdu", "description": "NCurses-based disk usage analyzer for quickly finding large files and directories"},
+            {"name": "tilix", "description": "Tiling terminal emulator with advanced features like split panes and session management"},
+            {"name": "tmux", "description": "Terminal multiplexer for creating multiple terminal sessions within a single window"},
+            {"name": "fastfetch", "description": "Quick system information tool that displays OS, kernel, uptime, and more"},
+            {"name": "unzip", "description": "Extraction utility for ZIP archives with support for various compression methods"},
+            {"name": "unrar", "description": "Extraction utility for RAR archives, including support for password-protected files"},
+            {"name": "git", "description": "Distributed version control system for tracking changes in source code and collaboration"},
+            {"name": "wget", "description": "Command-line utility for retrieving files using HTTP, HTTPS, and FTP protocols"},
+            {"name": "curl", "description": "Command-line tool for transferring data using various protocols with extensive options"},
+            {"name": "gnome-tweaks", "description": "Advanced configuration tool for customizing GNOME desktop environment settings"},
+            {"name": "syncthing", "description": "Continuous file synchronization program for sharing files between devices securely"}
+        ]
+    },
+    "additional_apps": {
+        "internet_communication": {
+            "name": "Internet & Communication",
+            "apps": {
+                "install_firefox": {
+                    "name": "Firefox",
+                    "command": "flatpak install -y flathub org.mozilla.firefox",
+                    "description": "Fast, private & safe web browser."
+                },
+                "install_chrome": {
+                    "name": "Google Chrome",
+                    "command": [
+                        "wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -",
+                        "echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" > /etc/apt/sources.list.d/google.list",
+                        "apt-get update",
+                        "apt-get install -y google-chrome-stable"
+                    ],
+                    "description": "The web browser from Google."
+                },
+                "install_chromium": {
+                    "name": "Chromium",
+                    "command": "apt-get install -y chromium",
+                    "description": "An open-source browser project that aims to build a safer, faster, and more stable way to experience the web."
+                },
+                "install_brave": {
+                    "name": "Brave",
+                    "description": "Privacy-focused web browser.",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "apt-get install -y curl",
+                                "curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg",
+                                "echo \"deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main\" | tee /etc/apt/sources.list.d/brave-browser-release.list",
+                                "apt-get update",
+                                "apt-get install -y brave-browser"
+                            ]
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub com.brave.Browser"
+                        }
+                    }
+                },
+                "install_vivaldi": {
+                    "name": "Vivaldi",
+                    "description": "Feature-rich, customizable web browser with built-in productivity tools and privacy features",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | gpg --dearmor | tee /etc/apt/trusted.gpg.d/vivaldi.gpg > /dev/null",
+                                "echo \"deb [arch=amd64] https://repo.vivaldi.com/archive/deb/ stable main\" | tee /etc/apt/sources.list.d/vivaldi.list",
+                                "apt-get update",
+                                "apt-get install -y vivaldi-stable"
+                            ]
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub com.vivaldi.Vivaldi"
+                        }
+                    }
+                },
+                "install_edge": {
+                    "name": "Microsoft Edge",
+                    "command": "flatpak install -y flathub com.microsoft.Edge",
+                    "description": "The web browser from Microsoft."
+                },
+                "install_librewolf": {
+                    "name": "LibreWolf",
+                    "command": "flatpak install -y flathub io.gitlab.librewolf-community",
+                    "description": "A privacy-focused fork of Firefox, emphasizing security and user freedom."
+                },
+                "install_opera": {
+                    "name": "Opera",
+                    "command": "flatpak install -y flathub com.opera.Opera",
+                    "description": "A fast, feature-rich web browser with a focus on user experience and security."
+                },
+                "install_zen_browser": {
+                    "name": "Zen Browser",
+                    "command": "flatpak install -y flathub app.zen_browser.zen",
+                    "description": "A beautifully designed web browser, privacy-focused, and packed with features."
+                },
+                "install_thunderbird": {
+                    "name": "Thunderbird",
+                    "command": "flatpak install -y flathub org.mozilla.Thunderbird",
+                    "description": "The email client from Mozilla."
+                },
+                "install_betterbird": {
+                    "name": "Betterbird",
+                    "command": "flatpak install -y flathub eu.betterbird.Betterbird",
+                    "description": "A fast, feature-rich email client with a focus on user experience and security."
+                },
+                "install_webappmanager": {
+                    "name": "WebAppManager",
+                    "command": "flatpak install -y flathub com.github.taiko2k.avvie",
+                    "description": "Run websites as if they were apps."
+                },
+                "install_discord": {
+                    "name": "Discord",
+                    "command": "flatpak install -y flathub com.discordapp.Discord",
+                    "description": "A popular communication platform for gamers and communities"
+                },
+                "install_element": {
+                    "name": "Element",
+                    "command": "flatpak install -y flathub im.riot.Riot",
+                    "description": "A secure, open-source Matrix client"
+                },
+                "install_telegram": {
+                    "name": "Telegram Desktop",
+                    "command": "flatpak install -y flathub org.telegram.desktop",
+                    "description": "A messaging app with a focus on speed and security"
+                },
+                "install_signal": {
+                    "name": "Signal Desktop",
+                    "command": "flatpak install -y flathub org.signal.Signal",
+                    "description": "A private messaging app with end-to-end encryption"
+                },
+                "install_whatsapp": {
+                    "name": "Whatsie",
+                    "command": "flatpak install -y flathub com.ktechpit.whatsie",
+                    "description": "Feature rich WhatsApp web client based on Qt WebEngine"
+                },
+                "install_tor": {
+                    "name": "Tor",
+                    "command": [
+                        "apt-get install -y tor",
+                        "systemctl enable --now tor",
+                        "flatpak install -y flathub org.torproject.torbrowser-launcher"
+                    ],
+                    "description": "Tor service and Tor Browser Launcher for secure networking"
+                }
+            }
+        },
+        "office_productivity": {
+            "name": "Office Productivity",
+            "apps": {
+                "install_libreoffice": {
+                    "name": "LibreOffice",
+                    "description": "A powerful office suite. Its clean interface and feature-rich tools help you unleash your creativity and enhance your productivity",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "apt-get remove -y libreoffice*",
+                                "apt-get install -y libreoffice-writer libreoffice-calc libreoffice-impress libreoffice-draw libreoffice-math libreoffice-base"
+                            ]
+                        },
+                        "Flatpak": {
+                            "command": [
+                                "flatpak install -y flathub org.libreoffice.LibreOffice",
+                                "flatpak install -y --reinstall org.freedesktop.Platform.Locale/x86_64/24.08",
+                                "flatpak install -y --reinstall org.libreoffice.LibreOffice.Locale"
+                            ]
+                        }
+                    }
+                },
+                "install_onlyoffice": {
+                    "name": "OnlyOffice",
+                    "command": "flatpak install -y flathub org.onlyoffice.desktopeditors",
+                    "description": "Create, view and edit text documents, spreadsheets and presentations of any size and complexity"
+                },
+                "install_wpsoffice": {
+                    "name": "WPS Office",
+                    "command": "flatpak install -y flathub com.wps.Office",
+                    "description": "a powerful office suite, which is able to process word file, produce wonderful slides, and analyze data as well"
+                },
+                "install_joplin": {
+                    "name": "Joplin",
+                    "command": "flatpak install -y flathub net.cozic.joplin_desktop",
+                    "description": "A note-taking app with a focus on privacy and security"
+                },
+                "install_logseq": {
+                    "name": "Logseq",
+                    "command": "flatpak install -y flathub com.logseq.Logseq",
+                    "description": "A knowledge management tool with a focus on privacy and security"
+                },
+                "install_obsidian": {
+                    "name": "Obsidian",
+                    "command": "flatpak install -y flathub md.obsidian.Obsidian",
+                    "description": "A note-taking app with a focus on privacy and security"
+                },
+                "install_dialect": {
+                    "name": "Dialect",
+                    "command": "flatpak install -y flathub app.drey.Dialect",
+                    "description": "A translation app for GNOME supporting multiple services"
+                },
+                "install_decoder": {
+                    "name": "Decoder",
+                    "command": "flatpak install -y flathub com.belmoussaoui.Decoder",
+                    "description": "Fancy yet simple QR Codes scanner and generator."
+                },
+                "install_bitwarden": {
+                    "name": "Bitwarden",
+                    "command": "flatpak install -y flathub com.bitwarden.desktop",
+                    "description": "A secure and free password manager for all of your devices"
+                },
+                "install_keepassxc": {
+                    "name": "KeePassXC",
+                    "command": "apt-get install -y keepassxc",
+                    "description": "A free, open-source, and easy-to-use password manager"
+                }
+            }
+        },
+        "development_tools": {
+            "name": "Coding and DevOps",
+            "apps": {
+                "install_vscode": {
+                    "name": "Visual Studio Code",
+                    "command": [
+                        "wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg",
+                        "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main\" > /etc/apt/sources.list.d/vscode.list",
+                        "apt-get update",
+                        "apt-get install -y code"
+                    ],
+                    "description": "A powerful source code editor"
+                },
+                "install_vscodium": {
+                    "name": "VSCodium",
+                    "command": [
+                        "wget -qO- https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/-/raw/master/pub.gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/vscodium.gpg",
+                        "echo \"deb [arch=amd64] https://download.vscodium.com/debs vscodium stable\" > /etc/apt/sources.list.d/vscodium.list",
+                        "apt-get update",
+                        "apt-get install -y codium"
+                    ],
+                    "description": "A free and open-source distribution of VS Code"
+                },
+                "install_github_desktop": {
+                    "name": "GitHub Desktop",
+                    "command": "flatpak install -y flathub io.github.shiftey.Desktop",
+                    "description": "A powerful desktop client for GitHub"
+                },
+                "install_ansible": {
+                    "name": "Ansible",
+                    "command": [
+                        "echo \"deb http://ppa.launchpad.net/ansible/ansible/ubuntu $(lsb_release -cs) main\" > /etc/apt/sources.list.d/ansible.list",
+                        "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367",
+                        "apt-get update",
+                        "apt-get install -y ansible"
+                    ],
+                    "description": "A powerful automation tool for IT"
+                },
+                "install_docker": {
+                    "name": "Docker",
+                    "command": [
+                        "apt-get remove -y docker docker-engine docker.io containerd runc",
+                        "apt-get update",
+                        "apt-get install -y ca-certificates curl gnupg",
+                        "install -m 0755 -d /etc/apt/keyrings",
+                        "curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+                        "chmod a+r /etc/apt/keyrings/docker.gpg",
+                        "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable\" | tee /etc/apt/sources.list.d/docker.list > /dev/null",
+                        "apt-get update",
+                        "apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
+                        "systemctl enable --now docker",
+                        "systemctl enable --now containerd",
+                        "groupadd docker",
+                        "usermod -aG docker $ACTUAL_USER",
+                        "rm -rf $ACTUAL_HOME/.docker",
+                        "echo \"Docker installed successfully. Please log out and back in for the group changes to take effect.\""
+                    ],
+                    "description": "A platform for building, shipping, and running applications in containers"
+                },
+                "install_podman": {
+                    "name": "Podman",
+                    "command": "apt-get install -y podman",
+                    "description": "A tool for managing containers and pods"
+                },
+                "install_tabby": {
+                    "name": "Tabby",
+                    "command": [
+                        "wget https://github.com/Eugeny/tabby/releases/download/v1.0.221/tabby-1.0.221-linux-x64.deb",
+                        "apt-get install -y ./tabby-1.0.221-linux-x64.deb",
+                        "rm -f ./tabby-1.0.221-linux-x64.deb"
+                    ],
+                    "description": "A terminal for a more modern age"
+                },
+                "install_veracrypt": {
+                    "name": "VeraCrypt",
+                    "command": [
+                        "wget https://launchpad.net/veracrypt/trunk/1.26.20/+download/veracrypt-1.26.20-Debian-12-amd64.deb",
+                        "apt-get install -y ./veracrypt-1.26.20-Debian-12-amd64.deb",
+                        "rm -f ./veracrypt-1.26.20-Debian-12-amd64.deb"
+                    ],
+                    "description": "A free and open-source encryption software"
+                },
+                "install_zsh_oh_my_zsh": {
+                    "name": "Zsh and Oh My Zsh",
+                    "command": [
+                        "apt-get install -y zsh",
+                        "sudo -u $ACTUAL_USER sh -c \"RUNZSH=no $(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" \"\" --unattended",
+                        "chsh -s $(which zsh) $ACTUAL_USER",
+                        "sudo -u $ACTUAL_USER bash << EOF",
+                        "git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions",
+                        "git clone https://github.com/marlonrichert/zsh-autocomplete.git ${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-autocomplete",
+                        "git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search",
+                        "git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$ACTUAL_HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting",
+                        "sed -i 's/plugins=(git)/plugins=(apt aliases genpass git zsh-autosuggestions zsh-autocomplete zsh-history-substring-search z zsh-syntax-highlighting)/' $ACTUAL_HOME/.zshrc",
+                        "sed -i 's/ZSH_THEME=\"robbyrussell\"/ZSH_THEME=\"jonathan\"/' $ACTUAL_HOME/.zshrc",
+                        "EOF"
+                    ],
+                    "description": "Install Zsh shell and Oh My Zsh framework"
+                },
+                "install_miniconda": {
+                    "name": "Miniconda",
+                    "command": [
+                        "sudo -u $ACTUAL_USER bash << EOF",
+                        "mkdir -p $ACTUAL_HOME/.miniconda3",
+                        "wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $ACTUAL_HOME/.miniconda3/miniconda.sh",
+                        "bash $ACTUAL_HOME/.miniconda3/miniconda.sh -b -u -p $ACTUAL_HOME/.miniconda3",
+                        "rm -rf $ACTUAL_HOME/.miniconda3/miniconda.sh",
+                        "$ACTUAL_HOME/.miniconda3/bin/conda init bash",
+                        "$ACTUAL_HOME/.miniconda3/bin/conda init zsh",
+                        "EOF"
+                    ],
+                    "description": "Install Miniconda Python distribution"
+                }
+            }
+        },
+        "media_graphics": {
+            "name": "Media & Graphics",
+            "apps": {
+                "install_vlc": {
+                    "name": "VLC",
+                    "description": "A media player with a focus on privacy and security",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y vlc"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.videolan.VLC"
+                        }
+                    }
+                },
+                "install_stremio": {
+                    "name": "Stremio",
+                    "command": "flatpak install -y flathub com.stremio.Stremio",
+                    "description": "A media center with a focus on privacy and security"
+                },
+                "install_spotify": {
+                    "name": "Spotify",
+                    "command": "flatpak install -y flathub com.spotify.Client",
+                    "description": "A music streaming service with a focus on privacy and security"
+                },
+                "install_gimp": {
+                    "name": "GIMP",
+                    "description": "a freely distributed program for such tasks as photo retouching, image composition and image authoring",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y gimp"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.gimp.GIMP"
+                        }
+                    }
+                },
+                "install_inkscape": {
+                    "name": "Inkscape",
+                    "description": "A Free and open source vector graphics editor",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y inkscape"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.inkscape.Inkscape"
+                        }
+                    }
+                },
+                "install_krita": {
+                    "name": "Krita",
+                    "description": "A full-featured digital art studio.",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y krita"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.kde.krita"
+                        }
+                    }
+                },
+                "install_blender": {
+                    "name": "Blender",
+                    "description": "A free and open source 3D creation suite.",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y blender"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.blender.Blender"
+                        }
+                    }
+                },
+                "install_obs": {
+                    "name": "OBS Studio",
+                    "description": "Free and open source software for video capturing, recording, and live streaming.",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y obs-studio"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub com.obsproject.Studio"
+                        }
+                    }
+                },
+                "install_kdenlive": {
+                    "name": "Kdenlive",
+                    "description": "A video editing application with support for many audio and video formats",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y kdenlive"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.kde.kdenlive"
+                        }
+                    }
+                },
+                "install_freetube": {
+                    "name": "FreeTube",
+                    "command": "flatpak install -y flathub io.freetubeapp.FreeTube",
+                    "description": "An open source desktop YouTube player built with privacy in mind."
+                }
+            }
+        },
+        "gaming_emulation": {
+            "name": "Gaming & Emulation",
+            "apps": {
+                "install_steam": {
+                    "name": "Steam",
+                    "description": "A software distribution service with an online store, automated installation, automatic updates, achievements, SteamCloud synchronized savegame and screenshot functionality, and many social features",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "apt-get install -y wget gdebi-core libgl1-mesa-dri:i386 libgl1-mesa-glx:i386",
+                                "wget https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb",
+                                "gdebi -n steam.deb",
+                                "rm -f steam.deb"
+                            ]
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub com.valvesoftware.Steam"
+                        }
+                    }
+                },
+                "install_lutris": {
+                    "name": "Lutris",
+                    "description": "Helps you install and play video games from all eras and from most gaming systems",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "echo \"deb http://download.opensuse.org/repositories/home:/strycore/Debian_12/ ./\" | tee /etc/apt/sources.list.d/lutris.list",
+                                "wget -q https://download.opensuse.org/repositories/home:/strycore/Debian_12/Release.key -O /etc/apt/trusted.gpg.d/lutris.asc",
+                                "apt-get update",
+                                "apt-get install -y lutris"
+                            ]
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub net.lutris.Lutris"
+                        }
+                    }
+                },
+                "install_heroic": {
+                    "name": "Heroic Games Launcher",
+                    "command": "flatpak install -y flathub com.heroicgameslauncher.hgl",
+                    "description": "A free and open source games launcher."
+                },
+                "install_retroarch": {
+                    "name": "RetroArch",
+                    "description": "Enables you to run classic games on a wide range of computers and consoles",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y retroarch"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.libretro.RetroArch"
+                        }
+                    }
+                },
+                "install_dolphin": {
+                    "name": "Dolphin",
+                    "description": "An emulator for two recent Nintendo video game consoles: the GameCube and the Wii",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y dolphin-emu"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.DolphinEmu.dolphin-emu"
+                        }
+                    }
+                },
+                "install_duckstation": {
+                    "name": "DuckStation",
+                    "command": "flatpak install -y flathub org.duckstation.DuckStation",
+                    "description": "An simulator/emulator of the Sony PlayStation(TM) console"
+                },
+                "install_ppsspp": {
+                    "name": "PPSSPP",
+                    "description": "A PSP emulator that can run games in full HD resolution",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y ppsspp"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.ppsspp.PPSSPP"
+                        }
+                    }
+                },
+                "install_pcsx2": {
+                    "name": "PCSX2",
+                    "command": "flatpak install -y flathub net.pcsx2.PCSX2",
+                    "description": "A free and open-source PlayStation 2 emulator"
+                },
+                "install_melonds": {
+                    "name": "melonDS",
+                    "command": "flatpak install -y flathub net.kuribo64.melonDS",
+                    "description": "Aims at providing fast and accurate Nintendo DS emulation"
+                },
+                "install_xemu": {
+                    "name": "xemu",
+                    "command": "flatpak install -y flathub app.xemu.xemu",
+                    "description": "A free and open-source application that emulates the original Microsoft Xbox game console"
+                }
+            }
+        },
+        "remote_networking": {
+            "name": "Remote Networking",
+            "apps": {
+                "install_remmina": {
+                    "name": "Remmina",
+                    "description": "A remote-desktop client written in GTK, to use other desktops remotely, from a tiny screen or large monitors",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y remmina"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.remmina.Remmina"
+                        }
+                    }
+                },
+                "install_nomachine": {
+                    "name": "NoMachine",
+                    "description": "A remote desktop software, that enables fast and secure access to your remote PC or desktop computer",
+                    "installation_types": {
+                        "DEB": {
+                            "command": [
+                                "wget https://download.nomachine.com/download/8.16/Linux/nomachine_8.16.1_1_amd64.deb",
+                                "apt-get install -y ./nomachine_8.16.1_1_amd64.deb",
+                                "rm -f ./nomachine_8.16.1_1_amd64.deb"
+                            ]
+                        }
+                    }
+                },
+                "install_rustdesk": {
+                    "name": "RustDesk",
+                    "command": "flatpak install -y flathub com.rustdesk.RustDesk",
+                    "description": "A remote desktop software, that enables fast and secure access to your remote PC or desktop computer"
+                },
+                "install_anydesk": {
+                    "name": "AnyDesk",
+                    "command": "flatpak install -y flathub com.anydesk.Anydesk",
+                    "description": "Ensures secure and reliable remote desktop connections for IT professionals and on-the-go individuals alike"
+                },
+                "install_proton_vpn": {
+                    "name": "Proton VPN",
+                    "command": "flatpak install -y flathub com.protonvpn.www",
+                    "description": "A VPN client, that provides a secure and private connection to the internet"
+                },
+                "install_mullvad_vpn": {
+                    "name": "Mullvad VPN",
+                    "description": "A VPN client, that provides a secure and private connection to the internet",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "curl -fsSL https://repository.mullvad.net/deb/mullvad-keyring.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/mullvad-keyring.gpg > /dev/null",
+                                "echo \"deb [arch=amd64] https://repository.mullvad.net/deb/stable $(. /etc/os-release && echo \"$VERSION_CODENAME\") main\" | tee /etc/apt/sources.list.d/mullvad.list",
+                                "apt-get update",
+                                "apt-get install -y mullvad-vpn"
+                            ]
+                        }
+                    }
+                },
+                "install_zerotier": {
+                    "name": "ZeroTier",
+                    "command": [
+                        "curl -s 'https://raw.githubusercontent.com/zerotier/ZeroTierOne/main/doc/contact%40zerotier.com.gpg' | gpg --import && if z=$(curl -s 'https://install.zerotier.com/' | gpg); then echo \"$z\" | sudo bash; fi"
+                    ],
+                    "description": "A secure network overlay that allows you to manage all of your network resources as if they were on the same LAN"
+                },
+                "install_tailscale": {
+                    "name": "Tailscale",
+                    "description": "Tailscale is a mesh VPN (Virtual Private Network) service that streamlines connecting devices and services securely across different networks",
+                    "installation_types": {
+                        "APT": {
+                            "command": [
+                                "curl -fsSL https://tailscale.com/install.sh | sh",
+                                "systemctl enable --now tailscaled"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "file_sharing_download": {
+            "name": "File Sharing & Download",
+            "apps": {
+                "install_qbittorrent": {
+                    "name": "qBittorrent",
+                    "description": "Aims to provide an open-source software alternative to µTorrent.",
+                    "installation_types": {
+                        "APT": {
+                            "command": "apt-get install -y qbittorrent"
+                        },
+                        "Flatpak": {
+                            "command": "flatpak install -y flathub org.qbittorrent.qBittorrent"
+                        }
+                    }
+                },
+                "install_video_downloader": {
+                    "name": "Video Downloader",
+                    "command": "flatpak install -y flathub com.github.unrud.VideoDownloader",
+                    "description": "Download videos from websites with an easy-to-use interface"
+                }
+            }
+        },
+        "system_tools": {
+            "name": "System Tools",
+            "apps": {
+                "install_mission_center": {
+                    "name": "Mission Center",
+                    "command": "flatpak install -y flathub io.missioncenter.MissionCenter",
+                    "description": "Monitor your CPU, Memory, Disk, Network and GPU usage"
+                },
+                "install_flatseal": {
+                    "name": "Flatseal",
+                    "command": "flatpak install -y flathub com.github.tchx84.Flatseal",
+                    "description": "A graphical utility to review and modify permissions from your Flatpak applications"
+                },
+                "install_extension_manager": {
+                    "name": "Extension Manager",
+                    "command": "flatpak install -y flathub com.mattjakeman.ExtensionManager",
+                    "description": "A utility for browsing and installing GNOME Shell Extensions"
+                },
+                "install_bottles": {
+                    "name": "Bottles",
+                    "command": "flatpak install -y flathub com.usebottles.bottles",
+                    "description": "Lets you run Windows software on Linux, such as applications and games."
+                },
+                "install_protontricks": {
+                    "name": "Protontricks",
+                    "command": "flatpak install -y flathub com.github.Matoking.protontricks",
+                    "description": "A wrapper script that allows you to easily run Winetricks commands for Steam Play/Proton games"
+                },
+                "install_protonup_qt": {
+                    "name": "ProtonUp-Qt",
+                    "command": "flatpak install -y flathub net.davidotek.pupgui2",
+                    "description": "Install and manage Wine- and Proton-based compatibility tools for Steam and Lutris with this graphical user interface"
+                },
+                "install_gear_lever": {
+                    "name": "Gear Lever",
+                    "command": "flatpak install -y flathub it.mijorus.gearlever",
+                    "description": "An utility to manage AppImages with ease!"
+                },
+                "install_peazip": {
+                    "name": "PeaZip",
+                    "command": "flatpak install -y flathub io.github.peazip.PeaZip",
+                    "description": "A free file archiver utility, based on Open Source technologies of 7-Zip, p7zip, Brotli, FreeArc, PAQ, Zstandard, and PEA projects"
+                },
+                "install_deja_dup": {
+                    "name": "Deja Dup",
+                    "command": "flatpak install -y flathub org.gnome.DejaDup",
+                    "description": "A GNOME archive manager"
+                },
+                "install_pika_backup": {
+                    "name": "Pika Backup",
+                    "command": "flatpak install -y flathub org.gnome.World.PikaBackup",
+                    "description": "A simple backup tool for Linux"
+                }
+            }
+        }
+    },    
+    "customization": {
+        "name": "Customization",
+        "apps": {
+            "install_microsoft_fonts": {
+                "name": "Microsoft Fonts",
+                "description": "Install Microsoft Windows fonts",
+                "installation_types": {
+                    "core": {
+                        "command": [
+                            "apt-get install -y curl cabextract x11-xserver-utils fontconfig",
+                            "wget https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm",
+                            "alien -d msttcore-fonts-installer-2.6-1.noarch.rpm",
+                            "dpkg -i msttcore-fonts-installer_2.6-1_all.deb",
+                            "rm -f msttcore-fonts-installer-2.6-1.noarch.rpm msttcore-fonts-installer_2.6-1_all.deb"
+                        ]
+                    },
+                    "windows": {
+                        "command": [
+                            "apt-get install -y wget cabextract x11-xserver-utils fontconfig",
+                            "wget -O /tmp/winfonts.zip https://mktr.sbs/fonts",
+                            "mkdir -p $ACTUAL_HOME/.local/share/fonts/windows",
+                            "unzip /tmp/winfonts.zip -d $ACTUAL_HOME/.local/share/fonts/windows",
+                            "rm -f /tmp/winfonts.zip",
+                            "fc-cache -fv"
+                        ]
+                    }
+                }
+            },
+            "install_google_fonts": {
+                "name": "Google Fonts",
+                "command": [
+                    "wget -O /tmp/google-fonts.zip https://github.com/google/fonts/archive/main.zip",
+                    "mkdir -p $ACTUAL_HOME/.local/share/fonts/google",
+                    "unzip /tmp/google-fonts.zip -d $ACTUAL_HOME/.local/share/fonts/google",
+                    "rm -f /tmp/google-fonts.zip",
+                    "fc-cache -fv"
+                ],
+                "description": "Install Google fonts collection"
+            },
+            "install_adobe_fonts": {
+                "name": "Adobe Fonts",
+                "command": [
+                    "mkdir -p $ACTUAL_HOME/.local/share/fonts/adobe-fonts",
+                    "git clone --depth 1 https://github.com/adobe-fonts/source-sans.git $ACTUAL_HOME/.local/share/fonts/adobe-fonts/source-sans",
+                    "git clone --depth 1 https://github.com/adobe-fonts/source-serif.git $ACTUAL_HOME/.local/share/fonts/adobe-fonts/source-serif",
+                    "git clone --depth 1 https://github.com/adobe-fonts/source-code-pro.git $ACTUAL_HOME/.local/share/fonts/adobe-fonts/source-code-pro",
+                    "fc-cache -f"
+                ],
+                "description": "Install Adobe fonts collection"
+            },
+            "install_tela_icon_theme": {
+                "name": "Tela Icon Theme",
+                "command": [
+                    "git clone https://github.com/vinceliuice/Tela-icon-theme.git /tmp/Tela-icon-theme",
+                    "cd /tmp/Tela-icon-theme && ./install.sh -a",
+                    "rm -rf /tmp/Tela-icon-theme",
+                    "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.interface icon-theme \"Tela-orange\""
+                ],
+                "description": "Install Tela icon theme"
+            },
+            "install_qogir_icon_theme": {
+                "name": "Qogir Icon Theme",
+                "command": [
+                    "git clone https://github.com/vinceliuice/Qogir-icon-theme.git /tmp/Qogir-icon-theme",
+                    "cd /tmp/Qogir-icon-theme && ./install.sh -c all -t all",
+                    "rm -rf /tmp/Qogir-icon-theme",
+                    "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.interface icon-theme \"Qogir\""
+                ],
+                "description": "A flat colorful design icon theme for linux desktops"
+            },
+            "install_papirus_icon_theme": {
+                "name": "Papirus Icon Theme",
+                "description": "A flat colorful design icon theme for linux desktops",
+                "installation_types": {
+                    "APT": {
+                        "command": [
+                            "apt-get install -y papirus-icon-theme",
+                            "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.interface icon-theme \"Papirus\""
+                        ]
+                    }
+                }
+            },
+            "install_numix_icon_theme": {
+                "name": "Numix Icon Theme",
+                "description": "A flat colorful design icon theme for linux desktops",
+                "installation_types": {
+                    "APT": {
+                        "command": [
+                            "apt-get install -y numix-icon-theme",
+                            "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.interface icon-theme \"Numix\""
+                        ]
+                    }
+                }
+            },
+            "install_numix_circle_icon_theme": {
+                "name": "Numix Circle Icon Theme",
+                "description": "A flat colorful design icon theme for linux desktops",
+                "installation_types": {
+                    "APT": {
+                        "command": [
+                            "apt-get install -y numix-circle-icon-theme",
+                            "sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.interface icon-theme \"Numix-Circle\""
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
