@@ -110,7 +110,7 @@ def build_system_config(options: Dict[str, Any], output_mode: str) -> str:
                     for cmd in commands:
                         if option == "set_hostname" and "hostnamectl set-hostname" in cmd:
                             # Use a placeholder for the hostname
-                            hostname = options.get("hostname", "fedora-workstation")
+                            hostname = options.get("hostname", "debian-workstation")
                             cmd = cmd.replace("{hostname}", hostname)
                         if output_mode == "Quiet" and should_quiet_redirect(cmd):
                             cmd += quiet_redirect
@@ -119,7 +119,7 @@ def build_system_config(options: Dict[str, Any], output_mode: str) -> str:
                     cmd = commands
                     if option == "set_hostname" and "hostnamectl set-hostname" in cmd:
                         # Use a placeholder for the hostname
-                        hostname = options.get("hostname", "fedora-workstation")
+                        hostname = options.get("hostname", "debian-workstation")
                         cmd = cmd.replace("{hostname}", hostname)
                     if output_mode == "Quiet" and should_quiet_redirect(cmd):
                         cmd += quiet_redirect
