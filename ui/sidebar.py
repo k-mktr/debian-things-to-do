@@ -362,15 +362,18 @@ def render_sidebar() -> None:
         .link-bar a {
             text-decoration: none;
             font-weight: bold;
-            color: #8da9c4;
+            color: #E8D8DD;
+            transition: color 0.3s ease;
         }
         .link-bar a:hover {
-            text-decoration: underline;
+            color: #9A2E36;
+            text-decoration: none;
         }
         .separator {
             width: 100%;
-            border-top: 1px solid #8da9c4;
+            border-top: 1px solid #9A2E36;
             margin: 21px 0;
+            opacity: 0.6;
         }
         @media (max-width: 600px) {
             .link-bar {
@@ -380,12 +383,12 @@ def render_sidebar() -> None:
         }
     </style>
     <div class="link-bar">
-        <a href="https://fedoraproject.org/workstation/" target="_blank" style="text-decoration: none;" aria-label="Fedora Workstation">Still on the fence?<br>Grab your Fedora now!</a>
+        <a href="https://www.debian.org" target="_blank" style="text-decoration: none;" aria-label="Debian">Still on the fence?<br>Grab your Debian now!</a>
     </div>
     <div class="separator"></div>
     <div style="text-align: center; padding: 21px 0;">
-        <p style="margin-bottom: 5px;">Created with ❤️ for Open Source</p>
-        <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #8da9c4;" aria-label="Karol Stefan Danisz LinkedIn">
+        <p style="margin-bottom: 5px; color: #E8D8DD;">Created with ❤️ for Open Source</p>
+        <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #E8D8DD; transition: color 0.3s ease;" aria-label="Karol Stefan Danisz LinkedIn" onmouseover="this.style.color='#9A2E36'" onmouseout="this.style.color='#E8D8DD'">
             <i>by Karol Stefan Danisz</i>
         </a>
     </div>

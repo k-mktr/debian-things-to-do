@@ -16,44 +16,46 @@ def render_header():
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 2rem;
             width: 100%;
             max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 2rem;
+            margin: 1rem auto;
+            padding: 1rem;
         }
         .logo {
-            width: 600px;
+            width: 400px;
             height: auto;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             animation: fadeIn 1s ease-out;
         }
         .main-header {
             font-size: 2.5em;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 1rem;
+            margin: 0;
+            padding: 0;
             animation: fadeIn 1s ease-out 0.3s;
             opacity: 0;
             animation-fill-mode: forwards;
             width: 100%;
+            line-height: 1;
         }
         .sub-header {
             font-size: 1.8em;
             text-align: center;
             font-style: italic;
-            margin-bottom: 1.5rem;
+            margin: 0;
+            padding: 0;
             animation: fadeIn 1s ease-out 0.6s;
             opacity: 0;
             animation-fill-mode: forwards;
             width: 100%;
+            line-height: 1;
         }
     </style>
     <div class="header-container">
         <img src="https://github.com/k-mktr/debian-things-to-do/blob/master/assets/debian.svg?raw=true" alt="Debian Logo" class="logo">
-        <h2 class="main-header">Not Another <i>'Things To Do'!</i></h2>
-        <h3 class="sub-header">Debian System Setup Script Builder - Automated Configuration Tool</h3>
+        <h3 class="main-header">Not Another <i>'Things To Do'!</i></h3>
+        <h4 class="sub-header">Debian System Setup Script Builder - Automated Configuration Tool</h4>
     </div>
     """, unsafe_allow_html=True)
 
