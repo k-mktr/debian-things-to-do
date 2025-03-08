@@ -7,6 +7,20 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Check if running on Debian
+if ! grep -qi "debian" /etc/os-release; then
+    echo "Error: This script is designed for Debian-based systems only"
+    exit 1
+fi
+
+# Check for required packages
+for pkg in apt-get dpkg systemctl gpg; do
+    if ! command -v "$pkg" >/dev/null 2>&1; then
+        echo "Error: Required package '$pkg' is not installed"
+        exit 1
+    fi
+done
+
 # Set variables
 ACTUAL_USER=$SUDO_USER
 ACTUAL_HOME=$(eval echo ~$SUDO_USER)

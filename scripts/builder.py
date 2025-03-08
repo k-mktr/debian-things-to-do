@@ -411,13 +411,6 @@ def build_full_script(template: str, options: Dict[str, Any], output_mode: str) 
         The complete generated script
     """
     try:
-        # Check Debian requirements first
-        if not check_debian_requirements():
-            error_script = "#!/bin/bash\n\n"
-            error_script += "echo \"Error: System requirements not met. Please check the logs for details.\"\n"
-            error_script += "exit 1\n"
-            return error_script
-
         script_parts = {
             "system_upgrade": build_system_upgrade(options, output_mode),
             "system_config": build_system_config(options, output_mode),
