@@ -25,8 +25,8 @@ def check_dependencies(options: Dict[str, Any]) -> Dict[str, Any]:
     if any(option in updated_options["system_config"] and updated_options["system_config"].get(option, False) 
            for option in codec_options):
         # Ensure non-free and contrib repositories are enabled
-        updated_options["system_config"]["enable_multimedia_repos"] = True
-        logging.debug("Multimedia repositories automatically enabled due to codec selection")
+        updated_options["system_config"]["enable_nonfree_repos"] = True
+        logging.debug("Debian non-free and contrib repositories automatically enabled due to codec selection")
     
     # Check for Flatpak dependencies
     flatpak_apps = [
