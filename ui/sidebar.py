@@ -391,6 +391,9 @@ def render_sidebar() -> None:
         <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #E8D8DD; transition: color 0.3s ease;" aria-label="Karol Stefan Danisz LinkedIn" onmouseover="this.style.color='#9A2E36'" onmouseout="this.style.color='#E8D8DD'">
             <i>by Karol Stefan Danisz</i>
         </a>
+        <div style="margin-top: 15px; display: flex; justify-content: center;">
+            <iframe src="https://github.com/sponsors/k-mktr/button" title="Sponsor k-mktr" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
