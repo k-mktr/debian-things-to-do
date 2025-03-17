@@ -1,6 +1,8 @@
 PROFILES = {
-    "Recommended": {
-        "system_config": ["configure_dnf", "enable_dnf_autoupdate", "firmware_updates", "enable_rpmfusion", "configure_power_settings"],
+    "name": "Full Setup",
+    "description": "Complete system setup with all recommended options",
+    "options": {
+        "system_config": ["configure_apt", "enable_apt_autoupdate", "firmware_updates", "configure_power_settings"],
         "essential_apps": ["install_mc", "install_bpytop", "install_rsync", "install_fastfetch", "install_unzip", "install_unrar", "install_git", "install_wget", "install_curl", "install_gnome_tweaks"],
         "additional_apps": {
             "internet_communication": ["install_vivaldi", "install_betterbird", "install_tor"],

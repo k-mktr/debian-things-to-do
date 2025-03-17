@@ -102,9 +102,6 @@ def render_sidebar() -> None:
         logging.error(f"Error in system configuration section: {str(e)}", exc_info=True)
         system_config_matches = False
     
-    # Initialize rpm_fusion_checkbox variable
-    rpm_fusion_checkbox = False
-    
     with st.sidebar.expander("System Configuration", expanded=system_config_matches and bool(search_query)):
         for option in all_options["system_config"]:
             try:
@@ -121,20 +118,11 @@ def render_sidebar() -> None:
                     
                     logging.debug(f"Processing option: {option}")
                     
-                    # Special handling for RPM Fusion
-                    if option == "enable_rpmfusion":
-                        rpm_fusion_checkbox = st.checkbox(
-                            nattd_data["system_config"][option]["name"],
-                            key=f"system_config_{option}",
-                            help=nattd_data["system_config"][option]["description"]
-                        )
-                        options["system_config"][option] = rpm_fusion_checkbox
-                    else:
-                        options["system_config"][option] = st.checkbox(
-                            nattd_data["system_config"][option]["name"],
-                            key=f"system_config_{option}",
-                            help=nattd_data["system_config"][option]["description"]
-                        )
+                    options["system_config"][option] = st.checkbox(
+                        nattd_data["system_config"][option]["name"],
+                        key=f"system_config_{option}",
+                        help=nattd_data["system_config"][option]["description"]
+                    )
                     
                     if option == "set_hostname" and options["system_config"][option]:
                         hostname = st.text_input("Enter the new hostname:", value=app_state.hostname or "")
@@ -147,17 +135,15 @@ def render_sidebar() -> None:
             if search_query and option not in nattd_data["system_config"]:
                 st.empty()  # Placeholder to keep expander visible
 
-        # Check if any codec option is selected and update RPM Fusion checkbox
+        # Check if any codec option is selected
         try:
             codec_options = ["install_multimedia_codecs", "install_intel_codecs", "install_amd_codecs"]
             if any(option in options["system_config"] and options["system_config"].get(option, False) 
                   for option in codec_options):
-                options["system_config"]["enable_rpmfusion"] = True
-                if not rpm_fusion_checkbox:
-                    st.sidebar.info("""
-                    **RPM Fusion** has been automatically selected because you chose to install codecs.
-                    This is required for proper multimedia support on Fedora.
-                    """)
+                st.sidebar.info("""
+                **Note**: Multimedia codecs will be installed from the Debian non-free repositories.
+                This is required for proper multimedia support on Debian.
+                """)
         except Exception as e:
             logging.error(f"Error in codec options check: {str(e)}", exc_info=True)
 
@@ -363,17 +349,33 @@ def render_sidebar() -> None:
             text-decoration: none;
             font-weight: bold;
             color: #E8D8DD;
-            transition: color 0.3s ease;
         }
         .link-bar a:hover {
-            color: #9A2E36;
             text-decoration: none;
+            opacity: 0.9;
         }
         .separator {
             width: 100%;
             border-top: 1px solid #9A2E36;
             margin: 21px 0;
-            opacity: 0.6;
+        }
+        .support-button {
+            display: block;
+            margin: 15px auto;
+            padding: 10px 20px;
+            background-color: #9A2E36;
+            color: #E8D8DD !important;
+            border-radius: 5px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            width: fit-content;
+        }
+        .support-button:hover {
+            text-decoration: none !important;
+            background-color: #7A1E26;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         @media (max-width: 600px) {
             .link-bar {
@@ -383,17 +385,22 @@ def render_sidebar() -> None:
         }
     </style>
     <div class="link-bar">
-        <a href="https://www.debian.org" target="_blank" style="text-decoration: none;" aria-label="Debian">Still on the fence?<br>Grab your Debian now!</a>
+        <a href="https://www.debian.org/" target="_blank" style="text-decoration: none;" aria-label="Debian">Still on the fence?<br>Get Debian now!</a>
     </div>
     <div class="separator"></div>
+    <div style="display: flex; justify-content: center; align-items: center; padding: 10px;">
+        <a href="https://github.com/sponsors/k-mktr" 
+           target="_blank" 
+           class="support-button"
+           aria-label="Support the project on GitHub Sponsors">
+            ☕ Support This Project
+        </a>
+    </div>
     <div style="text-align: center; padding: 21px 0;">
-        <p style="margin-bottom: 5px; color: #E8D8DD;">Created with ❤️ for Open Source</p>
-        <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #E8D8DD; transition: color 0.3s ease;" aria-label="Karol Stefan Danisz LinkedIn" onmouseover="this.style.color='#9A2E36'" onmouseout="this.style.color='#E8D8DD'">
+        <p style="margin-bottom: 5px;">Created with ❤️ for Open Source</p>
+        <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #E8D8DD;" aria-label="Karol Stefan Danisz LinkedIn">
             <i>by Karol Stefan Danisz</i>
         </a>
-        <div style="margin-top: 15px; display: flex; justify-content: center;">
-            <iframe src="https://github.com/sponsors/k-mktr/button" title="Sponsor k-mktr" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
-        </div>
     </div>
     """, unsafe_allow_html=True)
     
