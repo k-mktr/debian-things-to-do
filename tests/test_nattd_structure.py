@@ -85,6 +85,16 @@ class TestNattdStructure(unittest.TestCase):
         raw = open(os.path.join(REPO, "nattd.json")).read()
         self.assertNotIn("ubuntu-restricted-extras", raw)
 
+    def test_no_packages_removed_in_trixie(self):
+        """Packages that no longer exist in Debian 13 (trixie) must not be referenced."""
+        raw = open(os.path.join(REPO, "nattd.json")).read()
+        for gone in ("software-properties-common", "libgl1-mesa-glx", "ubuntu-restricted-extras"):
+            self.assertNotIn(gone, raw)
+        # ppsspp APT variant removed (package dropped from trixie; Flatpak kept)
+        data = load_nattd()
+        ppsspp = data["additional_apps"]["gaming_emulation"]["apps"]["install_ppsspp"]
+        self.assertNotIn("apt-get install -y ppsspp", str(ppsspp.get("installation_types", {})))
+
     def test_essential_apps_have_name_and_description(self):
         for app in self.data["essential_apps"]["apps"]:
             with self.subTest(app=app.get("name")):
