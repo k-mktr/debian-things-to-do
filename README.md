@@ -27,6 +27,8 @@
 - Builder fix: selecting any codec option now automatically enables the multimedia repositories (previously a phantom option key made that a no-op)
 - Docker install made idempotent (guarded `groupadd`) and the destructive `rm -rf ~/.docker` removed
 - **UX niceties**: Select all / Clear all on Essential Apps and per category on Additional Applications (search-aware), selection counters
+- **⚡ Quick Setup profiles**: one-click presets plus export/import of custom profiles as JSON (ported from the Fedora edition, presets adapted to the Debian catalog)
+- **Robust script template**: ERR-trap with a ✅/⚠️ failure summary and a metadata header in every generated script
 - **Freshness radar** (`check_freshness.py` + weekly CI job): verifies every Flatpak ID and URL in the catalog against Flathub and live HTTP checks; auto-manages a `stale-links` issue — reporting only, never blocking
 - **CI pipeline**: pytest suite (structure, builder end-to-end, freshness, UX widgets), generated-script shell-syntax checks, ruff lint (blocking, pinned ruleset)
 - Fixed all dead `mktr.sbs` links (domain is gone) — replaced with LinkedIn/GitHub profiles
@@ -62,6 +64,7 @@ This project offers a Streamlit-based web application for generating a tailored 
   - Install themes and icon themes
   - Configure power settings
   - Set up development environments (Zsh, Oh My Zsh, Miniconda)
+- **⚡ Quick Setup Profiles**: one-click presets (Developer, Creative, Minimal…) plus save/load of custom profiles as JSON
 - **UX niceties**: search-aware Select all / Clear all per section and live selection counters
 - **Advanced Options**: Add custom shell commands
 - **Script Preview**: View the generated script before downloading
