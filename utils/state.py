@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional
 import streamlit as st
+import copy
 
 @dataclass
 class AppState:
@@ -31,14 +32,14 @@ class AppState:
     def update_options(self, options: Dict[str, Any]) -> None:
         """
         Update the options in the application state.
-        
+
         Args:
             options (Dict[str, Any]): A dictionary of options to update.
         """
-        self.system_config = options.get("system_config", {})
-        self.essential_apps = options.get("essential_apps", {})
-        self.additional_apps = options.get("additional_apps", {})
-        self.customization = options.get("customization", {})
+        self.system_config = copy.deepcopy(options.get("system_config", {}))
+        self.essential_apps = copy.deepcopy(options.get("essential_apps", {}))
+        self.additional_apps = copy.deepcopy(options.get("additional_apps", {}))
+        self.customization = copy.deepcopy(options.get("customization", {}))
         
         if "hostname" in options:
             self.hostname = options["hostname"]
@@ -54,10 +55,10 @@ class AppState:
             Dict[str, Any]: A dictionary containing the current options.
         """
         options = {
-            "system_config": self.system_config,
-            "essential_apps": self.essential_apps,
-            "additional_apps": self.additional_apps,
-            "customization": self.customization
+            "system_config": copy.deepcopy(self.system_config),
+            "essential_apps": copy.deepcopy(self.essential_apps),
+            "additional_apps": copy.deepcopy(self.additional_apps),
+            "customization": copy.deepcopy(self.customization)
         }
         
         if self.hostname:

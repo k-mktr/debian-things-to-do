@@ -46,7 +46,52 @@ def render_sidebar() -> None:
     )
     
     st.sidebar.header("Configuration Options")
-    
+
+    # Quick Setup: predefined profiles + export/import of the current selection
+    with st.sidebar.expander("⚡ Quick Setup"):
+        try:
+            from profiles import PROFILES, apply_profile, apply_imported_selection
+            profile_names = list(PROFILES.keys())
+            profile_name = st.selectbox(
+                "Predefined profile",
+                profile_names,
+                key="profile_select",
+                help="Applying a profile replaces the current selection with the profile's contents."
+            )
+            st.caption(PROFILES[profile_name].get("description", ""))
+
+            if st.button("✅ Apply profile", key="profile_apply", use_container_width=True):
+                apply_profile(app_state, profile_name)
+                st.toast(f"Profile '{profile_name}' applied.", icon="⚡")
+                st.rerun()
+
+            st.divider()
+
+            exported = st.session_state.get("app_state")
+            import json as _json
+            export_data = _json.dumps(
+                exported.get_options() if exported else {}, indent=2, default=str)
+            st.download_button(
+                "⬇️ Export my selection",
+                data=export_data,
+                file_name="nattd-profile.json",
+                mime="application/json",
+                key="profile_export",
+                use_container_width=True,
+            )
+
+            uploaded = st.file_uploader("⬆️ Import selection (JSON)", type=["json"], key="profile_import")
+            if uploaded is not None and st.button("Load imported selection", key="profile_import_btn", use_container_width=True):
+                try:
+                    apply_imported_selection(app_state, _json.loads(uploaded.getvalue().decode("utf-8")))
+                    st.toast("Selection imported.", icon="⬆️")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Could not import selection: {e}")
+        except Exception as e:
+            st.sidebar.error(f"Quick Setup error: {e}")
+            logging.error(f"Quick Setup rendering error: {str(e)}", exc_info=True)
+
     # Initialize options in the app state if not already present
     options = app_state.get_options()
     
