@@ -4,6 +4,9 @@ import logging
 
 from utils import load_nattd, generate_options, load_bonus_scripts, AppState
 
+from ui.widgets import select_all_buttons as ux_select_all_buttons
+from ui.widgets import selection_counter as ux_selection_counter
+
 def matches_search(item_name: str, description: str, search_query: str) -> bool:
     """
     Check if an item matches the search query.
@@ -162,6 +165,17 @@ def render_sidebar() -> None:
         try:
             if "essential_apps" in nattd_data and "apps" in nattd_data["essential_apps"]:
                 essential_apps = nattd_data["essential_apps"]["apps"]
+                ux_select_all_buttons(
+                    "ux_essential",
+                    [(app["name"], st.session_state.get(f"essential_app_{app['name']}", False))
+                     for app in essential_apps if isinstance(app, dict) and "name" in app],
+                    [app["name"] for app in essential_apps
+                     if isinstance(app, dict) and "name" in app
+                     and "description" in app
+                     and matches_search(app["name"], app["description"], search_query)],
+                    search_query,
+                    lambda name, value: st.session_state.__setitem__(f"essential_app_{name}", value),
+                )
                 for app in essential_apps:
                     if isinstance(app, dict) and "name" in app and "description" in app and matches_search(app["name"], app["description"], search_query):
                         options["essential_apps"][app["name"]] = st.checkbox(
@@ -202,7 +216,18 @@ def render_sidebar() -> None:
                         st.subheader(category_data["name"])
                         options["additional_apps"][category] = {}
                         category_has_matches = False
-                        
+
+                        ux_select_all_buttons(
+                            f"ux_addl_{category}",
+                            [(app_id, st.session_state.get(f"app_{category}_{app_id}", False))
+                             for app_id in category_data["apps"]],
+                            [app_id for app_id, app_info in category_data["apps"].items()
+                             if isinstance(app_info, dict) and "name" in app_info and "description" in app_info
+                             and matches_search(app_info['name'], app_info['description'], search_query)],
+                            search_query,
+                            lambda app_id, value, _c=category: st.session_state.__setitem__(f"app_{_c}_{app_id}", value),
+                        )
+
                         for app_id, app_info in category_data["apps"].items():
                             if isinstance(app_info, dict) and "name" in app_info and "description" in app_info and matches_search(app_info['name'], app_info['description'], search_query):
                                 app_selected = st.checkbox(
@@ -246,6 +271,10 @@ def render_sidebar() -> None:
         try:
             if "customization" in nattd_data and "apps" in nattd_data["customization"]:
                 customization_apps = nattd_data["customization"]["apps"]
+                ux_selection_counter(
+                    "customization options",
+                    [(app_id, bool(st.session_state.get(f"customization_{app_id}", False)))
+                     for app_id in customization_apps])
                 for app_id, app_info in customization_apps.items():
                     if isinstance(app_info, dict) and "name" in app_info and "description" in app_info and matches_search(app_info['name'], app_info['description'], search_query):
                         options["customization"][app_id] = st.checkbox(
