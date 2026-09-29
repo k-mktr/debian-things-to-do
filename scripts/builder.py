@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, List, Union
+from typing import Dict, Any
 from utils import load_nattd, should_quiet_redirect
 import os
 
@@ -160,9 +160,9 @@ def build_app_install(options: Dict[str, Any], output_mode: str) -> str:
             if essential_apps:
                 install_commands.append("# Install essential applications")
                 app_names = " ".join([app["name"] for app in essential_apps])
-                install_commands.append(f"log_message \"Installing essential applications...\"")
+                install_commands.append("log_message \"Installing essential applications...\"")
                 install_commands.append(f"apt-get install -y {app_names}{quiet_redirect}")
-                install_commands.append(f"log_message \"Essential applications installed successfully.\"")
+                install_commands.append("log_message \"Essential applications installed successfully.\"")
                 install_commands.append("")
 
         # Additional apps

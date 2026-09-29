@@ -225,7 +225,7 @@
                 },
                 "install_thunderbird": {
                     "name": "Thunderbird",
-                    "command": "flatpak install -y flathub org.mozilla.Thunderbird",
+                    "command": "flatpak install -y flathub org.mozilla.thunderbird",
                     "description": "The email client from Mozilla."
                 },
                 "install_betterbird": {
@@ -630,7 +630,21 @@
                 },
                 "install_duckstation": {
                     "name": "DuckStation",
-                    "command": "flatpak install -y flathub org.duckstation.DuckStation",
+                    "command": [
+                        "color_echo \"yellow\" \"Installing DuckStation (PlayStation 1 emulator)...\"",
+                        "apt-get install -y libfuse2",
+                        "mkdir -p $ACTUAL_HOME/.local/bin $ACTUAL_HOME/.local/share/applications",
+                        "wget -O $ACTUAL_HOME/.local/bin/DuckStation-x64.AppImage \"https://github.com/stenzek/duckstation/releases/latest/download/DuckStation-x64.AppImage\"",
+                        "chmod +x $ACTUAL_HOME/.local/bin/DuckStation-x64.AppImage",
+                        "cat > $ACTUAL_HOME/.local/share/applications/duckstation.desktop <<EOF",
+                        "[Desktop Entry]",
+                        "Type=Application",
+                        "Name=DuckStation",
+                        "Exec=$ACTUAL_HOME/.local/bin/DuckStation-x64.AppImage",
+                        "Categories=Game;Emulator;",
+                        "EOF",
+                        "color_echo \"green\" \"DuckStation installed.\""
+                    ],
                     "description": "An simulator/emulator of the Sony PlayStation(TM) console"
                 },
                 "install_ppsspp": {
@@ -837,7 +851,7 @@
                     "windows": {
                         "command": [
                             "apt-get install -y wget cabextract x11-xserver-utils fontconfig",
-                            "wget -O /tmp/winfonts.zip https://mktr.sbs/fonts",
+                            "wget -O /tmp/winfonts.zip https://github.com/k-mktr/fedora-things-to-do/releases/download/fonts/win-fonts.zip",
                             "mkdir -p $ACTUAL_HOME/.local/share/fonts/windows",
                             "unzip /tmp/winfonts.zip -d $ACTUAL_HOME/.local/share/fonts/windows",
                             "rm -f /tmp/winfonts.zip",

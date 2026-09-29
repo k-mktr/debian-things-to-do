@@ -12,9 +12,9 @@
 # This tool aims to simplify the post-installation process for Debian users,
 # allowing for easy customization and automation of common setup tasks.
 #
-# Author: Karl Stefan Danisz
-# Contact: https://mktr.sbs/linkedin
-# GitHub: https://mktr.sbs/github
+# Author: Karol Stefan Danisz
+# Contact: https://www.linkedin.com/in/karol-stefan-danisz/
+# GitHub: https://github.com/k-mktr
 # Version: 25.03
 #
 #
@@ -50,7 +50,7 @@ st.set_page_config(
         
         If you find this tool useful, consider sharing it with others.
 
-        Created by [Karl Stefan Danisz](https://mktr.sbs/linkedin)        
+        Created by [Karol Stefan Danisz](https://www.linkedin.com/in/karol-stefan-danisz/)        
         
         [GitHub Repository](https://github.com/k-mktr/debian-things-to-do)
         """
@@ -63,7 +63,7 @@ def initialize_state():
     """
     if 'app_state' not in st.session_state:
         # Create AppState instance
-        app_state = AppState.get_instance()
+        AppState.get_instance()
         logging.info("Application state initialized")
 
 def main():

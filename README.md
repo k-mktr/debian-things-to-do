@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/github/last-commit/k-mktr/debian-things-to-do" alt="Last Commit">
   <img src="https://img.shields.io/github/issues/k-mktr/debian-things-to-do" alt="GitHub issues">
   <img src="https://img.shields.io/github/license/k-mktr/debian-things-to-do" alt="GitHub license">
-  <a href="https://mktr.sbs/linkedin"><img src="https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin" alt="LinkedIn"></a>
+  <a href="https://www.linkedin.com/in/karol-stefan-danisz/"><img src="https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin" alt="LinkedIn"></a>
 </p>
 
 **Initial System Setup Shell Script Builder for Debian**
@@ -120,7 +120,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 For questions, feedback, or support:
 - Open an issue on this repository
-- Contact the author: [Karl Stefan Danisz](https://mktr.sbs/linkedin)
+- Contact the author: [Karol Stefan Danisz](https://www.linkedin.com/in/karol-stefan-danisz/)
 
 ## FAQ
 

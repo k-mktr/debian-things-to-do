@@ -1,7 +1,6 @@
 import streamlit as st
 import re
 import logging
-from typing import Dict, Any, Tuple
 
 from utils import load_nattd, generate_options, load_bonus_scripts, AppState
 
@@ -398,7 +397,7 @@ def render_sidebar() -> None:
     </div>
     <div style="text-align: center; padding: 21px 0;">
         <p style="margin-bottom: 5px;">Created with ❤️ for Open Source</p>
-        <a href="https://mktr.sbs/linkedin" target="_blank" style="text-decoration: none; color: #E8D8DD;" aria-label="Karol Stefan Danisz LinkedIn">
+        <a href="https://www.linkedin.com/in/karol-stefan-danisz/" target="_blank" style="text-decoration: none; color: #E8D8DD;" aria-label="Karol Stefan Danisz LinkedIn">
             <i>by Karol Stefan Danisz</i>
         </a>
     </div>
