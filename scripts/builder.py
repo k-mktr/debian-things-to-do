@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Dict, Any
 from utils import load_nattd, should_quiet_redirect
 import os
@@ -398,6 +399,62 @@ def check_debian_requirements() -> bool:
         logging.error(f"Error checking Debian requirements: {str(e)}")
         return False
 
+def _summarize_selection(options: Dict[str, Any]) -> str:
+    """
+    Build a human-readable comment block listing all selected options.
+
+    Used in the generated script header so users reporting issues can
+    simply paste the header instead of recalling what they selected.
+
+    Args:
+        options: The selected options dictionary
+
+    Returns:
+        Comment block with one '# - ' line per selected option
+    """
+    lines = []
+    try:
+        nattd_data = load_nattd()
+
+        for key, enabled in (options.get("system_config") or {}).items():
+            if enabled and isinstance(enabled, bool):
+                entry = nattd_data.get("system_config", {}).get(key, {})
+                lines.append(entry.get("name", key))
+
+        for app in nattd_data.get("essential_apps", {}).get("apps", []):
+            if isinstance(app, dict) and (options.get("essential_apps") or {}).get(app.get("name")):
+                lines.append(app.get("name", app))
+
+        for category, category_data in (options.get("additional_apps") or {}).items():
+            for app_id, app_data in category_data.items():
+                if isinstance(app_data, dict) and app_data.get("selected", False):
+                    app_config = nattd_data.get("additional_apps", {}).get(category, {}).get("apps", {}).get(app_id, {})
+                    name = app_config.get("name", app_id)
+                    itype = app_data.get("installation_type")
+                    lines.append(f"{name} ({itype})" if itype else name)
+
+        for app_id, app_value in (options.get("customization") or {}).items():
+            if isinstance(app_value, dict) and app_value.get("selected", False):
+                app_config = nattd_data.get("customization", {}).get("apps", {}).get(app_id, {})
+                name = app_config.get("name", app_id)
+                itype = app_value.get("installation_type")
+                lines.append(f"{name} ({itype})" if itype else name)
+            elif app_value is True:
+                app_config = nattd_data.get("customization", {}).get("apps", {}).get(app_id, {})
+                lines.append(app_config.get("name", app_id))
+
+        if (options.get("custom_script") or "").strip():
+            lines.append("Custom user-defined commands")
+
+        if not lines:
+            return "#   (nothing selected - system upgrade only)"
+
+        return "\n".join(f"#   - {entry}" for entry in lines)
+    except Exception as e:
+        logging.warning(f"Could not summarize selection for header: {e}")
+        return "#   (summary unavailable)"
+
+
 def build_full_script(template: str, options: Dict[str, Any], output_mode: str) -> str:
     """
     Build the complete script based on the template and selected options.
@@ -424,6 +481,11 @@ def build_full_script(template: str, options: Dict[str, Any], output_mode: str) 
         
         for placeholder, content in script_parts.items():
             full_script = full_script.replace(f"{{{{{placeholder}}}}}", content)
+
+        # Fill the metadata header (generation date, output mode, selected options)
+        full_script = full_script.replace("{generation_date}", datetime.now().strftime("%Y-%m-%d %H:%M"))
+        full_script = full_script.replace("{output_mode}", output_mode)
+        full_script = full_script.replace("# Selected options:", _summarize_selection(options))
         
         # Replace the hostname placeholder if it exists
         if "hostname" in options:
