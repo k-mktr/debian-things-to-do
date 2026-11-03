@@ -1,4 +1,6 @@
 import streamlit as st
+import base64
+from pathlib import Path
 from utils import safely_load_file, AppState
 from scripts import build_script, build_full_script
 
@@ -6,7 +8,10 @@ def render_header():
     """
     Render the application header with logo and title.
     """
-    st.markdown("""
+    debian_logo_path = Path(__file__).resolve().parents[1] / "assets" / "debian.svg"
+    debian_logo_data = base64.b64encode(debian_logo_path.read_bytes()).decode("ascii")
+    debian_logo_data_uri = f"data:image/svg+xml;base64,{debian_logo_data}"
+    header_markup = """
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -22,7 +27,8 @@ def render_header():
             padding: 1rem;
         }
         .logo {
-            width: 400px;
+            width: min(280px, 90vw);
+            max-width: 100%;
             height: auto;
             margin-bottom: 1.5rem;
             animation: fadeIn 1s ease-out;
@@ -53,11 +59,12 @@ def render_header():
         }
     </style>
     <div class="header-container">
-        <img src="https://github.com/k-mktr/debian-things-to-do/blob/master/assets/debian.svg?raw=true" alt="Debian Logo" class="logo">
+        <img src="__DEBIAN_LOGO_DATA_URI__" alt="Debian logo" class="logo" style="width:min(280px,90vw);max-width:100%;height:auto">
         <h3 class="main-header">Not Another <i>'Things To Do'!</i></h3>
         <h4 class="sub-header">Debian System Setup Script Builder - Automated Configuration Tool</h4>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(header_markup.replace("__DEBIAN_LOGO_DATA_URI__", debian_logo_data_uri), unsafe_allow_html=True)
 
 def render_script_preview():
     """
